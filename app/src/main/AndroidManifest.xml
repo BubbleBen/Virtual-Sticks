@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.dji.virtualsticks">
-
     <!-- Permissions and features -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -27,8 +26,6 @@
         android:name="android.hardware.usb.accessory"
         android:required="true" />
 
-    <!-- Permissions and features -->
-
     <application
         android:name=".MApplication"
         android:allowBackup="true"
@@ -38,33 +35,40 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.VirtualSticks">
 
+        <!--activity
+            android:name=".ConnectionActivity"
+            android:exported="false"
+            android:label="@string/title_activity_connection"
+            android:theme="@style/Theme.VirtualSticks.NoActionBar" />-->
         <!-- DJI SDK -->
         <uses-library android:name="com.android.future.usb.accessory" />
-        <uses-library android:name="org.apache.http.legacy" android:required="false" />
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
         <meta-data
             android:name="com.dji.sdk.API_KEY"
-            android:value="4fb2cca2edbb45dc48be1497" />
-
-        <!-- DJI SDK -->
-
+            android:value="4fb2cca2edbb45dc48be1497" /> <!-- DJI SDK -->
         <activity
-            android:name=".MainActivity"
+            android:name=".ConnectionActivity"
             android:configChanges="orientation"
-            android:screenOrientation="fullSensor"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
             </intent-filter>
+
             <meta-data
                 android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED"
                 android:resource="@xml/accessory_filter" />
         </activity>
+
+        <activity android:name=".MainActivity"
+            android:screenOrientation="landscape"/>
     </application>
 
 </manifest>
