@@ -49,9 +49,9 @@
         style="@style/common_button"
         android:id="@+id/btn_enable_virtual_stick"
         android:layout_marginLeft="5dp"
-        android:layout_alignTop="@+id/btn_start_simulator"
-        android:layout_alignStart="@+id/directionJoystickRight"
+        android:layout_alignTop="@+id/btn_mediaManager"
         android:layout_marginTop="0dp" />
+<!--        android:layout_alignStart="@+id/directionJoystickRight"-->
 
     <Button
         android:layout_width="wrap_content"
@@ -71,17 +71,15 @@
         style="@style/common_button"
         android:id="@+id/btn_take_off"
         android:layout_alignTop="@+id/btn_disable_virtual_stick"
-        android:layout_alignStart="@+id/btn_start_simulator"
+        android:layout_alignStart="@+id/btn_mediaManager"
         android:layout_marginTop="0dp"
-        android:layout_alignEnd="@+id/btn_start_simulator" />
+        android:layout_alignEnd="@+id/btn_mediaManager" />
 
-    <ToggleButton
-        android:id="@+id/btn_start_simulator"
+    <Button
+        android:id="@+id/btn_mediaManager"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Simulator"
-        android:textOff="Start Simulator"
-        android:textOn="Stop Simulator"
+        android:text="Media"
         style="@style/common_button"
         android:layout_below="@+id/textview_simulator"
         android:layout_toEndOf="@+id/btn_enable_virtual_stick"
@@ -96,38 +94,32 @@
         android:id="@+id/btn_land"
         android:layout_alignTop="@+id/btn_take_off"
         android:layout_marginTop="0dp"
-        android:layout_alignEnd="@+id/directionJoystickLeft"
         android:layout_toEndOf="@+id/btn_take_off"
         android:layout_marginLeft="10dp" />
+<!--    android:layout_alignEnd="@+id/directionJoystickLeft"-->
 
-    <com.dji.virtualsticks.OnScreenJoystick
-        android:id="@+id/directionJoystickRight"
-        android:layout_width="130dp"
-        android:layout_height="130dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="70dp"
-        android:layout_marginLeft="10dp"
-        android:background="@mipmap/joystick_bg"/>
-
-    <com.dji.virtualsticks.OnScreenJoystick
-        android:id="@+id/directionJoystickLeft"
-        android:layout_width="130dp"
-        android:layout_height="130dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="70dp"
-        android:layout_marginRight="10dp"
-        android:background="@mipmap/joystick_bg"/>
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Scan Object"
+        android:textOff="Scan Object"
+        android:textOn="Stop Scan"
+        style="@style/common_button"
+        android:id="@+id/btn_auto"
+        android:layout_alignTop="@+id/btn_mediaManager"
+        android:layout_marginTop="0dp"
+        android:layout_toEndOf="@+id/btn_take_off"
+        android:layout_marginLeft="10dp" />
+<!--    android:layout_alignEnd="@+id/directionJoystickLeft"-->
 
     <!-- FPVDemo layout -->
     <TextureView
         android:id="@+id/video_previewer_surface"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
+        android:layout_above="@+id/linearLayout"
         android:layout_centerHorizontal="true"
-        android:layout_above="@+id/linearLayout" />
+        android:layout_gravity="center" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -188,3 +180,25 @@
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
+
+<!--
+<com.dji.virtualsticks.OnScreenJoystick
+android:id="@+id/directionJoystickRight"
+android:layout_width="130dp"
+android:layout_height="130dp"
+android:layout_alignParentLeft="true"
+android:layout_alignParentBottom="true"
+android:layout_marginBottom="70dp"
+android:layout_marginLeft="10dp"
+android:background="@mipmap/joystick_bg"/>
+
+<com.dji.virtualsticks.OnScreenJoystick
+android:id="@+id/directionJoystickLeft"
+android:layout_width="130dp"
+android:layout_height="130dp"
+android:layout_alignParentRight="true"
+android:layout_alignParentBottom="true"
+android:layout_marginBottom="70dp"
+android:layout_marginRight="10dp"
+android:background="@mipmap/joystick_bg"/>
+-->

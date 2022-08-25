@@ -104,9 +104,11 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
     protected TextView mConnectStatusTextView;
     private Button mBtnEnableVirtualStick;
     private Button mBtnDisableVirtualStick;
-    private ToggleButton mBtnSimulator;
+    //private ToggleButton mBtnSimulator;
+    private Button mMediaManagerBtn;
     private Button mBtnTakeOff;
     private Button mBtnLand;
+    private ToggleButton mBtnAuto;
     private TextView mTextView;
 
     private OnScreenJoystick mScreenJoystickRight;
@@ -115,6 +117,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
     private FlightController mFlightController;
     private Timer mSendVirtualStickDataTimer;
     private SendVirtualStickDataTask mSendVirtualStickDataTask;
+
+    private Timer mSendAutoTimer;
 
     private float mPitch;
     private float mRoll;
@@ -505,63 +509,67 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
         mBtnDisableVirtualStick = (Button) findViewById(R.id.btn_disable_virtual_stick);
         mBtnTakeOff = (Button) findViewById(R.id.btn_take_off);
         mBtnLand = (Button) findViewById(R.id.btn_land);
-        mBtnSimulator = (ToggleButton) findViewById(R.id.btn_start_simulator);
+        //mBtnSimulator = (ToggleButton) findViewById(R.id.btn_start_simulator);
+        mMediaManagerBtn = (Button)findViewById(R.id.btn_mediaManager);
+        mBtnAuto = (ToggleButton) findViewById(R.id.btn_auto);
         mTextView = (TextView) findViewById(R.id.textview_simulator);
         mConnectStatusTextView = (TextView) findViewById(R.id.ConnectStatusTextView);
-        mScreenJoystickRight = (OnScreenJoystick) findViewById(R.id.directionJoystickRight);
-        mScreenJoystickLeft = (OnScreenJoystick) findViewById(R.id.directionJoystickLeft);
+        //mScreenJoystickRight = (OnScreenJoystick) findViewById(R.id.directionJoystickRight);
+        //mScreenJoystickLeft = (OnScreenJoystick) findViewById(R.id.directionJoystickLeft);
 
         mBtnEnableVirtualStick.setOnClickListener(this);
         mBtnDisableVirtualStick.setOnClickListener(this);
+        mMediaManagerBtn.setOnClickListener(this);
         mBtnTakeOff.setOnClickListener(this);
         mBtnLand.setOnClickListener(this);
+        //mBtnAuto.setOnClickListener(this);
 
-        mBtnSimulator.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-
-                    mTextView.setVisibility(View.VISIBLE);
-
-                    if (mFlightController != null) {
-
-                        mFlightController.getSimulator()
-                                .start(InitializationData.createInstance(new LocationCoordinate2D(23, 113), 10, 10),
-                                        new CommonCallbacks.CompletionCallback() {
-                                            @Override
-                                            public void onResult(DJIError djiError) {
-                                                if (djiError != null) {
-                                                    showToast(djiError.getDescription());
-                                                }else
-                                                {
-                                                    showToast("Start Simulator Success");
-                                                }
-                                            }
-                                        });
-                    }
-
-                } else {
-
-                    mTextView.setVisibility(View.INVISIBLE);
-
-                    if (mFlightController != null) {
-                        mFlightController.getSimulator()
-                                .stop(new CommonCallbacks.CompletionCallback() {
-                                          @Override
-                                          public void onResult(DJIError djiError) {
-                                              if (djiError != null) {
-                                                  showToast(djiError.getDescription());
-                                              }else
-                                              {
-                                                  showToast("Stop Simulator Success");
-                                              }
-                                          }
-                                      }
-                                );
-                    }
-                }
-            }
-        });
+//        mBtnSimulator.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                if (isChecked) {
+//
+//                    mTextView.setVisibility(View.VISIBLE);
+//
+//                    if (mFlightController != null) {
+//
+//                        mFlightController.getSimulator()
+//                                .start(InitializationData.createInstance(new LocationCoordinate2D(23, 113), 10, 10),
+//                                        new CommonCallbacks.CompletionCallback() {
+//                                            @Override
+//                                            public void onResult(DJIError djiError) {
+//                                                if (djiError != null) {
+//                                                    showToast(djiError.getDescription());
+//                                                }else
+//                                                {
+//                                                    showToast("Start Simulator Success");
+//                                                }
+//                                            }
+//                                        });
+//                    }
+//
+//                } else {
+//
+//                    mTextView.setVisibility(View.INVISIBLE);
+//
+//                    if (mFlightController != null) {
+//                        mFlightController.getSimulator()
+//                                .stop(new CommonCallbacks.CompletionCallback() {
+//                                          @Override
+//                                          public void onResult(DJIError djiError) {
+//                                              if (djiError != null) {
+//                                                  showToast(djiError.getDescription());
+//                                              }else
+//                                              {
+//                                                  showToast("Stop Simulator Success");
+//                                              }
+//                                          }
+//                                      }
+//                                );
+//                    }
+//                }
+//            }
+//        });
 
         // init mVideoSurface
         mVideoSurface = (TextureView)findViewById(R.id.video_previewer_surface);
@@ -583,66 +591,66 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
 
         recordingTime.setVisibility(View.INVISIBLE);
 
-        mRecordBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//        mRecordBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//
+//            }
+//        });
 
-            }
-        });
-
-        mScreenJoystickLeft.setJoystickListener(new OnScreenJoystickListener(){
-
-            @Override
-            public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
-                if(Math.abs(pX) < 0.02 ){
-                    pX = 0;
-                }
-
-                if(Math.abs(pY) < 0.02 ){
-                    pY = 0;
-                }
-                float pitchJoyControlMaxSpeed = 10;
-                float rollJoyControlMaxSpeed = 10;
-
-                mPitch = (float)(pitchJoyControlMaxSpeed * pX);
-
-                mRoll = (float)(rollJoyControlMaxSpeed * pY);
-
-                if (null == mSendVirtualStickDataTimer) {
-                    mSendVirtualStickDataTask = new SendVirtualStickDataTask();
-                    mSendVirtualStickDataTimer = new Timer();
-                    mSendVirtualStickDataTimer.schedule(mSendVirtualStickDataTask, 100, 200);
-                }
-
-            }
-
-        });
-
-        mScreenJoystickRight.setJoystickListener(new OnScreenJoystickListener() {
-
-            @Override
-            public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
-                if(Math.abs(pX) < 0.02 ){
-                    pX = 0;
-                }
-
-                if(Math.abs(pY) < 0.02 ){
-                    pY = 0;
-                }
-                float verticalJoyControlMaxSpeed = 2;
-                float yawJoyControlMaxSpeed = 30;
-
-                mYaw = (float)(yawJoyControlMaxSpeed * pX);
-                mThrottle = (float)(verticalJoyControlMaxSpeed * pY);
-
-                if (null == mSendVirtualStickDataTimer) {
-                    mSendVirtualStickDataTask = new SendVirtualStickDataTask();
-                    mSendVirtualStickDataTimer = new Timer();
-                    mSendVirtualStickDataTimer.schedule(mSendVirtualStickDataTask, 0, 200);
-                }
-
-            }
-        });
+//        mScreenJoystickLeft.setJoystickListener(new OnScreenJoystickListener(){
+//
+//            @Override
+//            public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
+//                if(Math.abs(pX) < 0.02 ){
+//                    pX = 0;
+//                }
+//
+//                if(Math.abs(pY) < 0.02 ){
+//                    pY = 0;
+//                }
+//                float pitchJoyControlMaxSpeed = 10;
+//                float rollJoyControlMaxSpeed = 10;
+//
+//                mPitch = (float)(pitchJoyControlMaxSpeed * pX);
+//
+//                mRoll = (float)(rollJoyControlMaxSpeed * pY);
+//
+//                if (null == mSendVirtualStickDataTimer) {
+//                    mSendVirtualStickDataTask = new SendVirtualStickDataTask();
+//                    mSendVirtualStickDataTimer = new Timer();
+//                    mSendVirtualStickDataTimer.schedule(mSendVirtualStickDataTask, 100, 200);
+//                }
+//
+//            }
+//
+//        });
+//
+//        mScreenJoystickRight.setJoystickListener(new OnScreenJoystickListener() {
+//
+//            @Override
+//            public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
+//                if(Math.abs(pX) < 0.02 ){
+//                    pX = 0;
+//                }
+//
+//                if(Math.abs(pY) < 0.02 ){
+//                    pY = 0;
+//                }
+//                float verticalJoyControlMaxSpeed = 2;
+//                float yawJoyControlMaxSpeed = 30;
+//
+//                mYaw = (float)(yawJoyControlMaxSpeed * pX);
+//                mThrottle = (float)(verticalJoyControlMaxSpeed * pY);
+//
+//                if (null == mSendVirtualStickDataTimer) {
+//                    mSendVirtualStickDataTask = new SendVirtualStickDataTask();
+//                    mSendVirtualStickDataTimer = new Timer();
+//                    mSendVirtualStickDataTimer.schedule(mSendVirtualStickDataTask, 0, 200);
+//                }
+//
+//            }
+//        });
 
         mRecordBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -654,6 +662,35 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                 } else {
                     recordingTime.setVisibility(View.INVISIBLE);
                     stopRecord();
+                }
+            }
+        });
+
+        mBtnAuto.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // NOTE: current settings are a DIAMETER of 1m!!!
+                    mPitch = (float) 0.5; // positive is right
+                    mRoll = 0; // positive is forwards
+                    mYaw = (float) -45;
+                    mThrottle = 0;
+                    if (null == mSendVirtualStickDataTimer) {
+                        mSendVirtualStickDataTask = new SendVirtualStickDataTask();
+                        mSendAutoTimer = new Timer();
+                        mSendAutoTimer.schedule(mSendVirtualStickDataTask, 0, 100);
+                    }
+
+                } else {
+                    mPitch = 0;
+                    mRoll = 0;
+                    mYaw = 0;
+                    mThrottle = 0;
+                    if (null == mSendVirtualStickDataTimer) {
+                        mSendVirtualStickDataTask = new SendVirtualStickDataTask();
+                        mSendAutoTimer = new Timer();
+                        mSendAutoTimer.schedule(mSendVirtualStickDataTask, 0, 100);
+                    }
                 }
             }
         });
@@ -718,6 +755,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                 }
                 break;
 
+            case R.id.btn_mediaManager: {
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+                break;
+            }
+
             case R.id.btn_take_off:
                 if (mFlightController != null) {
                     mFlightController.startTakeoff(
@@ -755,6 +798,29 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                 }
 
                 break;
+//            case R.id.btn_auto:
+//                if (mFlightController != null) {
+//                    mFlightController.setYawControlMode(YawControlMode.ANGLE);
+//                    mSendAutoTimer = new Timer();
+//                    mSendAutoTimer.schedule(new TimerTask() {
+//                        @Override
+//                        public void run() {
+//                            mFlightController.sendVirtualStickFlightControlData(
+//                                    new FlightControlData(0, 0, 180, 0),
+//                                    new CommonCallbacks.CompletionCallback() {
+//                                        @Override
+//                                        public void onResult(DJIError djiError) {
+//                                            if (djiError != null) {
+//                                                showToast( "auto movement error: " + djiError.getDescription());
+//                                            } else {
+//                                                showToast("Auto Movement");
+//                                            }
+//                                        }
+//                                    });
+//                        }
+//                    }, 0, 100);
+//                }
+//                break;
 
             case R.id.btn_capture:{
                 captureAction();
@@ -866,7 +932,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                         ), new CommonCallbacks.CompletionCallback() {
                             @Override
                             public void onResult(DJIError djiError) {
-
+                                if (djiError != null) {
+                                    showToast(djiError.getDescription());
+                                }
                             }
                         }
                 );
