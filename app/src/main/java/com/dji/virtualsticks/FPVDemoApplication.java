@@ -43,6 +43,15 @@ public class FPVDemoApplication extends Application{
 
     }
 
+    public static synchronized Aircraft getAircraftInstance() {
+        if (!isAircraftConnected()) return null;
+        return (Aircraft) getProductInstance();
+    }
+
+    public static boolean isAircraftConnected() {
+        return getProductInstance() != null && getProductInstance() instanceof Aircraft;
+    }
+
     /**
      * This function is used to get the instance of DJIBaseProduct.
      * If no product is connected, it returns null.

@@ -756,7 +756,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                 break;
 
             case R.id.btn_mediaManager: {
-                Intent intent = new Intent(this, MainActivity.class);
+                Intent intent = new Intent(this, MediaActivity.class);
                 startActivity(intent);
                 break;
             }

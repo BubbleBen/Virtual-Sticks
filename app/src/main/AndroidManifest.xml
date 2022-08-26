@@ -69,6 +69,9 @@
 
         <activity android:name=".MainActivity"
             android:screenOrientation="landscape"/>
+
+        <activity android:name=".MediaActivity"
+            android:screenOrientation="landscape"/>
     </application>
 
 </manifest>
