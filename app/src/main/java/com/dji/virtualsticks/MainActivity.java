@@ -125,6 +125,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
     private float mYaw;
     private float mThrottle;
 
+    private long mCurrentTime;
+    private long mElapsedTime;
+
     // variables for FPVDemo
     protected TextureView mVideoSurface = null;
     private Button mCaptureBtn, mShootPhotoModeBtn, mRecordVideoModeBtn;
@@ -670,11 +673,14 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    mCurrentTime = System.currentTimeMillis();
+                    //showToast("current Time is " + mCurrentTime);
+
                     // NOTE: current settings are a DIAMETER of 1m!!!
-                    mPitch = (float) 0.5; // positive is right
+                    mPitch = (float) 0;//0.5; // positive is right
                     mRoll = 0; // positive is forwards
-                    mYaw = (float) -45;
-                    mThrottle = 0;
+                    mYaw = (float) 0;
+                    mThrottle = (float) 0.5;
                     if (null == mSendVirtualStickDataTimer) {
                         mSendVirtualStickDataTask = new SendVirtualStickDataTask();
                         mSendAutoTimer = new Timer();
@@ -682,6 +688,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                     }
 
                 } else {
+                    mCurrentTime = System.currentTimeMillis();
                     mPitch = 0;
                     mRoll = 0;
                     mYaw = 0;
@@ -756,8 +763,23 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                 break;
 
             case R.id.btn_mediaManager: {
-                Intent intent = new Intent(this, MediaActivity.class);
-                startActivity(intent);
+//                Intent intent = new Intent(this, MediaActivity.class);
+//                startActivity(intent);
+                Thread movementThread = new Thread(new AutoMovement());
+                movementThread.start();
+
+                Timer timer = new Timer();
+                //SecondMovementTask secondMovementTask = new SecondMovementTask();
+                UpdateFlightValues updateFlightValues = new UpdateFlightValues(movementThread, timer);
+                timer.schedule(updateFlightValues, 6000);
+                //showToast("movement is over");
+
+//                Thread movementThread2 = new Thread(new SecondMovementTask());
+//                movementThread2.start();
+//
+//                Timer timer2 = new Timer();
+//                UpdateFlightValues updateFlightValues2 = new UpdateFlightValues(movementThread2, timer2);
+//                timer2.schedule(updateFlightValues2, 12000);
                 break;
             }
 
@@ -926,19 +948,134 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
         public void run() {
 
             if (mFlightController != null) {
-                mFlightController.sendVirtualStickFlightControlData(
-                        new FlightControlData(
-                                mPitch, mRoll, mYaw, mThrottle
-                        ), new CommonCallbacks.CompletionCallback() {
-                            @Override
-                            public void onResult(DJIError djiError) {
-                                if (djiError != null) {
-                                    showToast(djiError.getDescription());
+                if (System.currentTimeMillis() < mCurrentTime + 2500) {
+                    mFlightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(
+                                    mPitch, mRoll, mYaw, mThrottle
+                            ), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        showToast(djiError.getDescription());
+                                    }
                                 }
                             }
-                        }
-                );
+                    );
+                } else if (System.currentTimeMillis() > mCurrentTime + 2500 && System.currentTimeMillis() < mCurrentTime + 3500) {
+                    mFlightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(
+                                    0, 0, 0, 0
+                            ), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        showToast(djiError.getDescription());
+                                    }
+                                }
+                            }
+                    );
+                } else if (System.currentTimeMillis() > mCurrentTime + 3500 && System.currentTimeMillis() < mCurrentTime + 9500) {
+                    mFlightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(
+                                    0, (float) 0.5, 0, 0
+                            ), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        showToast(djiError.getDescription());
+                                    }
+                                }
+                            }
+                    );
+                } else {
+                    showToast("Take manual control now");
+                    mFlightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(
+                                    0, 0, 0, 0
+                            ), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        showToast(djiError.getDescription());
+                                    }
+                                }
+                            }
+                    );
+                }
             }
         }
+    }
+
+    class UpdateFlightValues extends TimerTask {
+        private Thread thread;
+        private Timer timer;
+
+        public UpdateFlightValues(Thread thread, Timer timer) {
+            this.thread = thread;
+            this.timer = timer;
+        }
+
+        @Override
+        public void run() {
+            AutoStop();
+            if(thread != null && thread.isAlive()) {
+                showToast("1st movement interrupted");
+                thread.interrupt();
+                timer.cancel();
+            } else {
+                if (!thread.isAlive()) {
+                    showToast("thread not alive");
+                } else if (thread == null) {
+                    showToast("thread is null");
+                }
+            }
+        }
+    }
+
+//    class FirstMovementTask implements Runnable {
+//        @Override
+//        public void run() {
+//            //showToast("1st movement");
+//            while (!Thread.interrupted()) {
+//                showToast("1st movement");
+//                return;
+//            }
+//        }
+//    }
+//
+//    class SecondMovementTask implements Runnable {
+//        @Override
+//        public void run() {
+//            showToast("2nd movement");
+//            if (Thread.interrupted()) {
+//                showToast("2nd thread interrupted");
+//                return;
+//            }
+//        }
+//    }
+
+    class AutoMovement implements Runnable {
+        @Override
+        public void run() {
+            mPitch = (float) 0;//0.5; // positive is right
+            mRoll = 0; // positive is forwards
+            mYaw = (float) -45;
+            mThrottle = 0;
+            if (null == mSendVirtualStickDataTimer) {
+                mSendVirtualStickDataTask = new SendVirtualStickDataTask();
+                mSendAutoTimer = new Timer();
+                mSendAutoTimer.schedule(mSendVirtualStickDataTask, 0, 100);
+            }
+            showToast("automovement has just run");
+        }
+    }
+
+    private void AutoStop() {
+        mPitch = (float) 0;//0.5; // positive is right
+        mRoll = 0; // positive is forwards
+        mYaw = (float) 0;
+        mThrottle = 0;
+        mSendAutoTimer.schedule(mSendVirtualStickDataTask, 0, 100);
+        showToast("autostop has just run");
     }
 }
