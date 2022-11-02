@@ -117,8 +117,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
     private FlightController mFlightController;
     private Timer mSendVirtualStickDataTimer;
     private SendVirtualStickDataTask mSendVirtualStickDataTask;
+    private SendVirtualStickDataSecondTask mSendVirtualStickDataSecondTask;
+    private boolean takeManualControlShown = false;
+    private boolean scanPerformed = false;
 
     private Timer mSendAutoTimer;
+    private Timer mSendAutoSecondTimer;
 
     private float mPitch;
     private float mRoll;
@@ -675,6 +679,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                 if (isChecked) {
                     mCurrentTime = System.currentTimeMillis();
                     //showToast("current Time is " + mCurrentTime);
+                    takeManualControlShown = false;
+                    scanPerformed = false;
 
                     // NOTE: current settings are a DIAMETER of 1m!!!
                     mPitch = (float) 0;//0.5; // positive is right
@@ -690,14 +696,20 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                 } else {
                     mCurrentTime = System.currentTimeMillis();
                     mPitch = 0;
-                    mRoll = 0;
+                    mRoll = (float) -0.5;
                     mYaw = 0;
                     mThrottle = 0;
+                    scanPerformed = true;
                     if (null == mSendVirtualStickDataTimer) {
                         mSendVirtualStickDataTask = new SendVirtualStickDataTask();
                         mSendAutoTimer = new Timer();
                         mSendAutoTimer.schedule(mSendVirtualStickDataTask, 0, 100);
                     }
+//                    if (null == mSendVirtualStickDataTimer) {
+//                        mSendVirtualStickDataSecondTask = new SendVirtualStickDataSecondTask();
+//                        mSendAutoSecondTimer = new Timer();
+//                        mSendAutoSecondTimer.schedule(mSendVirtualStickDataSecondTask, 0, 100);
+//                    }
                 }
             }
         });
@@ -948,7 +960,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
         public void run() {
 
             if (mFlightController != null) {
-                if (System.currentTimeMillis() < mCurrentTime + 2500) {
+                if (System.currentTimeMillis() < mCurrentTime + 2500 && !scanPerformed) {
                     mFlightController.sendVirtualStickFlightControlData(
                             new FlightControlData(
                                     mPitch, mRoll, mYaw, mThrottle
@@ -961,7 +973,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                                 }
                             }
                     );
-                } else if (System.currentTimeMillis() > mCurrentTime + 2500 && System.currentTimeMillis() < mCurrentTime + 3500) {
+                } else if (System.currentTimeMillis() > mCurrentTime + 2500 && System.currentTimeMillis() < mCurrentTime + 3500 && !scanPerformed) {
                     mFlightController.sendVirtualStickFlightControlData(
                             new FlightControlData(
                                     0, 0, 0, 0
@@ -974,10 +986,103 @@ public class MainActivity extends Activity implements View.OnClickListener, Text
                                 }
                             }
                     );
-                } else if (System.currentTimeMillis() > mCurrentTime + 3500 && System.currentTimeMillis() < mCurrentTime + 9500) {
+                } else if (System.currentTimeMillis() > mCurrentTime + 3500 && System.currentTimeMillis() < mCurrentTime + 9500 && !scanPerformed) {
                     mFlightController.sendVirtualStickFlightControlData(
                             new FlightControlData(
                                     0, (float) 0.5, 0, 0
+                            ), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        showToast(djiError.getDescription());
+                                    }
+                                }
+                            }
+                    );
+                } else if (!scanPerformed) {
+                    if (!takeManualControlShown) {
+                        showToast("Take manual control now");
+                        takeManualControlShown = true;
+                    }
+                    mFlightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(
+                                    0, 0, 0, 0
+                            ), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        showToast(djiError.getDescription());
+                                    }
+                                }
+                            }
+                    );
+                } else if (System.currentTimeMillis() < mCurrentTime + 5000 && scanPerformed) {
+                    mFlightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(
+                                    mPitch, mRoll, mYaw, mThrottle
+                            ), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        showToast(djiError.getDescription());
+                                    }
+                                }
+                            }
+                    );
+                } else if (System.currentTimeMillis() > mCurrentTime + 5000 && System.currentTimeMillis() < mCurrentTime + 6000 && scanPerformed) {
+                    mFlightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(
+                                    0, 0, 0, 0
+                            ), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        showToast(djiError.getDescription());
+                                    }
+                                }
+                            }
+                    );
+                } else if (System.currentTimeMillis() > mCurrentTime + 6000 && System.currentTimeMillis() < mCurrentTime + 8500 && scanPerformed) {
+                    mFlightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(
+                                    0, 0, 0, (float) -0.5
+                            ), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        showToast(djiError.getDescription());
+                                    }
+                                }
+                            }
+                    );
+                } else {
+                    mFlightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(
+                                    0, 0, 0, 0
+                            ), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        showToast(djiError.getDescription());
+                                    }
+                                }
+                            }
+                    );
+                }
+            }
+        }
+    }
+
+    class SendVirtualStickDataSecondTask extends TimerTask {
+
+        @Override
+        public void run() {
+
+            if (mFlightController != null) {
+                if (System.currentTimeMillis() < mCurrentTime + 2500) {
+                    mFlightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(
+                                    mPitch, mRoll, mYaw, mThrottle
                             ), new CommonCallbacks.CompletionCallback() {
                                 @Override
                                 public void onResult(DJIError djiError) {
